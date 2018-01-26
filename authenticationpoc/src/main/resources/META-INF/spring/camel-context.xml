@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+    <import resource="bean-declarations.xml"/>
+    <import resource="endpoints.xml"/>
+    <camelContext id="AuthenticationContext" xmlns="http://camel.apache.org/schema/spring">
+
+        <route id="AuthenticationRoute" streamCache="true">
+            <from id="AuthenticationEndpoint" uri="cxf:bean:AuthenticationTestEndpoint"/>
+            <log id="_log1" message=" request message: {body} "/>
+           
+        </route>
+    </camelContext>
+</beans>

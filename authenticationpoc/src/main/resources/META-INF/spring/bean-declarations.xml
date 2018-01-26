@@ -1,0 +1,37 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:prop="http://camel.apache.org/schema/placeholder"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+
+	<bean id="authenticationInterceptor"
+		class="org.apache.cxf.interceptor.security.JAASLoginInterceptor">
+		<property name="contextName" value="other" />
+	</bean>
+
+
+	<bean id="authorizationInterceptor"
+		class="org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor">
+		<property name="globalRoles" value="pricing" />
+	</bean>
+
+	<bean id="wss4jInterceptor" class="org.apache.cxf.ws.security.wss4j.WSS4JInInterceptor">
+		<constructor-arg>
+			<map>
+				<entry key="action" value="UsernameToken" />
+				<entry key="passwordType" value="PasswordText" />
+			</map>
+		</constructor-arg>
+	</bean>
+
+
+
+
+</beans>
