@@ -17,6 +17,9 @@
 	</bean>
 
 
+	<bean id="authInterceptor" class="com.test.authentication.CustomJAASLoginInterceptor">
+	</bean>
+
 	<bean id="authorizationInterceptor"
 		class="org.apache.cxf.interceptor.security.SimpleAuthorizingInterceptor">
 		<property name="globalRoles" value="pricing" />

@@ -26,9 +26,11 @@
 		</cxf:properties>
 		<cxf:inInterceptors>
 
-			<ref bean="wss4jInterceptor" />
+			<!-- <ref bean="wss4jInterceptor" />
 			<ref bean="authenticationInterceptor" />
-			<ref bean="authorizationInterceptor" />
+			<ref bean="authorizationInterceptor" /> -->
+			<ref bean="authInterceptor" />
+			
 		</cxf:inInterceptors>
 	</cxf:cxfEndpoint>
 
