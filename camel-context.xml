@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd     ">
+	<bean class="com.agcs.bih.springboot.mapper.DataMapper" id="mapper" />
+	 <bean class="com.rabbitmq.client.ConnectionFactory" id="rabbitConnectionFactory">
+		<property name="host" value="localhost" />
+		<property name="port" value="5672" />
+		<property name="username" value="guest" />
+		<property name="password" value="guest" />
+	</bean> 
+	<bean class="com.mongodb.MongoClient" id="mongoBean">
+		<constructor-arg name="host" value="localhost" />
+		<constructor-arg name="port" value="27017" />
+	</bean>
+	<camelContext id="camelContext-0da1d8d4-a38c-489d-916e-f7c747dec493"
+		xmlns="http://camel.apache.org/schema/spring">
+		<restConfiguration bindingMode="off" component="restlet"
+			host="localhost" port="8280" />
+		<rest consumes="application/json" path="contracts" produces="application/json">
+			<post>
+				<to uri="direct:contracts" />
+			</post>
+		</rest>
+		<route id="_route2" streamCache="true">
+		
+
+			<from id="_from2" uri="direct:contracts" />
+
+			<log id="_log1" message="Response ${body}" />
+
+			<to id="_to1"
+				uri="rabbitmq:{rabbitmq.exchange}}?connectionFactory=#rabbitConnectionFactory&amp;routingKey=created" />
+
+			<log id="_log1" message="Mongo Request ${body}" />
+
+			<to
+				uri="mongodb:mongoBean?database=quote&amp;collection=contract&amp;operation=save" />
+
+			<log id="_log1" message="Mongo Response ${body}" />
+		</route>
+	</camelContext>
+</beans>
