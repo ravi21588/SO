@@ -1,32 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd     ">
-    <bean class="com.rabbitmq.client.ConnectionFactory" id="rabbitConnectionFactory">
-        <property name="host" value="localhost"/>
-        <property name="port" value="5672"/>
-        <property name="username" value="guest"/>
-        <property name="password" value="guest"/>
-    </bean>
-    <bean class="com.mongodb.MongoClient" id="mongoBean">
-        <constructor-arg name="host" value="localhost"/>
-        <constructor-arg name="port" value="27017"/>
-    </bean>
-    <camelContext id="camelContext-0da1d8d4-a38c-489d-916e-f7c747dec493" xmlns="http://camel.apache.org/schema/spring">
-        <restConfiguration bindingMode="off" component="restlet"
-            host="localhost" port="8280"/>
-        <rest consumes="application/json" path="contracts" produces="application/json">
-            <post>
-                <to uri="direct:contracts"/>
-            </post>
-        </rest>
-        <route id="_route2" streamCache="true">
-        
-            <from id="_from2" uri="direct:contracts"/>
-            <log id="_log1" message="Response ${body}"/>
-            <to id="_to1" uri="rabbitmq:{rabbitmq.exchange}}?connectionFactory=#rabbitConnectionFactory&amp;routingKey=created"/>
-            <log id="_log1" message="Mongo Request ${body}"/>
-            <to id="_to2" uri="mongodb:mongoBean?database=quote-db&amp;collection=contract&amp;operation=save"/>
-            <log id="_log1" message="Mongo Response ${body}"/>
-        </route>
-    </camelContext>
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd     ">
+
+	<bean id="sagaService" class="org.apache.camel.impl.saga.InMemorySagaService"
+		init-method="start" destroy-method="stop" />
+
+
+	<camelContext id="camelContext-0da1d8d4-a38c-489d-916e-f7c747dec493"
+		xmlns="http://camel.apache.org/schema/spring">
+		<restConfiguration bindingMode="off" component="restlet"
+			host="localhost" port="8380" />
+		<rest consumes="application/json" path="contracts" produces="application/json">
+			<post>
+				<to uri="direct:contracts" />
+			</post>
+		</rest>
+		<route id="_route2" streamCache="true">
+			<from id="_from2" uri="direct:contracts" />
+			<log id="_log1" message="Response ${body}" />
+			<saga completionMode="MANUAL" timeoutInMilliseconds="3600000">
+				<compensation uri="direct:compensation" />
+				<completion uri="direct:completion" />
+			</saga>
+			<multicast stopOnException="true" parallelProcessing="true">
+				<to uri="seda:createObject" />
+				<to uri="seda:createParty" />
+			</multicast>
+			<setBody id="_setBody2">
+				<simple>resource:classpath:json/response.json</simple>
+			</setBody>
+		</route>
+		<route id="_route9" streamCache="true">
+			<from uri="seda:createObject" />
+			<saga propagation="MANDATORY">
+			</saga>
+			<log message="Afterset 
+			${header.Long-Running-Action}" />
+			<to uri="seda:ackquote" />
+		</route>
+
+
+		<route id="_route10" streamCache="true">
+			<from uri="seda:createParty" />
+			<saga propagation="MANDATORY">
+			</saga>
+			<log message="Afterset 
+			${header.Long-Running-Action}" />
+			<to uri="seda:ackquote" />
+		</route>
+
+		<route id="SegaCompletionRoute" streamCache="true">
+			<from uri="seda:ackquote?concurrentConsumers=2" />
+			<aggregate completionSize="2" groupExchanges="true">
+				<correlationExpression>
+					<simple>${header.Long-Running-Action}</simple>
+				</correlationExpression>
+				<to uri="mock:result" />
+			</aggregate>
+			<saga propagation="MANDATORY">
+			</saga>
+			<log message="Grouped exchange 
+			${body}" />
+			<log message="Ackquote 
+			${header.Long-Running-Action}" />
+			<!-- <to uri="saga:compensate" /> -->
+			<to uri="saga:complete" />
+		</route>
+
+		<route id="_route4" streamCache="true">
+			<from uri="direct:completion" />
+			<log message="Saga completed ${body}" />
+		</route>
+
+		<route id="_route5" streamCache="true">
+			<from uri="direct:compensation" />
+			<log message="Saga compensated ${body}" />
+		</route>
+
+	</camelContext>
 </beans>

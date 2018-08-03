@@ -1,4 +1,4 @@
-package com.agcs.bih.springboot.quotemspoc;
+package com.springboot.quotemspoc;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
