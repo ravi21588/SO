@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:camel="http://camel.apache.org/schema/spring"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:cxf="http://camel.apache.org/schema/cxf"
+    xmlns:http="http://cxf.apache.org/transports/http/configuration"
+    xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+    xmlns:prop="http://camel.apache.org/schema/placeholder"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd        http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd        http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd        http://cxf.apache.org/transports/http/configuration http://cxf.apache.org/schemas/configuration/http-conf.xsd">
+    <import resource="classpath:META-INF/cxf/cxf.xml"/>
+    <import resource="classpath:META-INF/cxf/cxf-servlet.xml"/>
+    <cxf:cxfEndpoint
+        address="http://localhost:8088/eu/deferred/NotificationService"
+        endpointName="nms:ICalculator" id="NotificationService"
+        serviceName="nms:CalculatorService"
+        wsdlURL="wsdl/notification/calculator.wsdl" xmlns:nms="http://Example.org">
+        <cxf:properties>
+            <entry key="dataFormat" value="PAYLOAD"/>
+        </cxf:properties>
+        <cxf:inInterceptors>
+            <ref bean="wss4jInInterceptor"/>
+            <!-- <ref bean="authenticationInterceptor"/>
+            <ref bean="authorizationInterceptor"/> -->
+        </cxf:inInterceptors>
+    </cxf:cxfEndpoint>
+</beans>
