@@ -18,8 +18,8 @@
             <entry key="dataFormat" value="PAYLOAD"/>
         </cxf:properties>
         <cxf:inInterceptors>
-            <ref bean="wss4jInInterceptor"/>
-            <!-- <ref bean="authenticationInterceptor"/>
+            <!--<ref bean="wss4jInInterceptor"/>
+             <ref bean="authenticationInterceptor"/>
             <ref bean="authorizationInterceptor"/> -->
         </cxf:inInterceptors>
     </cxf:cxfEndpoint>
